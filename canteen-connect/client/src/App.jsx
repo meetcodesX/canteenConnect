@@ -7,7 +7,10 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) {
+    return null; // or a loader component
+  }
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 

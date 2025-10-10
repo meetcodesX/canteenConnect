@@ -7,6 +7,7 @@ const MenuItemCard = ({ item, onRatingUpdate }) => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imgSrc, setImgSrc] = useState(item.imageUrl || '');
 
   const handleRatingSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +33,41 @@ const MenuItemCard = ({ item, onRatingUpdate }) => {
     }
   };
 
+  const formatPriceInINR = (amount) => {
+    try {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(amount);
+    } catch (_) {
+      return `₹${Number(amount).toFixed(0)}`;
+    }
+  };
+
+  const getBackupImageUrl = (name) => {
+    const key = (name || '').toLowerCase();
+    const map = {
+      'dosa': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Masala_dosa.jpg',
+      'idli': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Idli_Sambar.jpg',
+      'samosa': 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Samosachutney.jpg',
+      'vada pav': 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Vada_Paav.JPG',
+      'poha': 'https://upload.wikimedia.org/wikipedia/commons/9/99/Poha%2C_Indore.jpg',
+      'fried rice': 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Fried_Rice_with_egg.jpg',
+      'noodles': 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Chow_mein_1_by_yuen.jpg',
+      'burger': 'https://upload.wikimedia.org/wikipedia/commons/0/0b/RedDot_Burger.jpg',
+      'pizza': 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Pizza_margherita_stu_spivack.jpg',
+      'chole bhature': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Chole_Bhature_from_India.jpg',
+      'upma': 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Upma_with_coconut_chutney.jpg',
+      'ice cream': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Ice_cream_dessert_02.jpg',
+      'cold coffee': 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Iced_Coffee_(_2178071886_).jpg',
+      'coke': 'https://upload.wikimedia.org/wikipedia/commons/4/40/Coca-Cola_can_355ml.jpg',
+      'sprite': 'https://upload.wikimedia.org/wikipedia/commons/f/f3/Sprite_Zero_bottle.jpg',
+      'campa': 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Soft_drinks_assortment.jpg'
+    };
+    return map[key] || `https://picsum.photos/seed/${encodeURIComponent(key || 'food')}/600/400`;
+  };
+
   const renderStars = (score) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -47,11 +83,17 @@ const MenuItemCard = ({ item, onRatingUpdate }) => {
     <div className="card hover:shadow-lg transition-shadow duration-200">
       {/* Item Image */}
       <div className="w-full h-48 bg-gray-200 rounded-lg mb-4 overflow-hidden">
-        {item.imageUrl ? (
+        {imgSrc ? (
           <img
-            src={item.imageUrl}
+            src={imgSrc}
             alt={item.name}
             className="w-full h-full object-cover"
+            onError={() => {
+              const fallback = getBackupImageUrl(item.name);
+              if (imgSrc !== fallback) {
+                setImgSrc(fallback);
+              }
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -67,7 +109,7 @@ const MenuItemCard = ({ item, onRatingUpdate }) => {
         
         <div className="flex items-center justify-between mb-3">
           <span className="text-2xl font-bold text-primary-600">
-            ${item.price.toFixed(2)}
+            {formatPriceInINR(item.price)}
           </span>
           <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
             {item.category}
