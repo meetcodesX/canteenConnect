@@ -1,16 +1,28 @@
+# Use Python image
 FROM python:3.10-slim
 
-WORKDIR /app
-
-# Install system dependencies needed for OpenCV & Ultralytics
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
 COPY requirements.txt .
 
+# Install python packages
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy all files
 COPY . .
 
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:$PORT", "--workers", "1"]
+# Expose port
+EXPOSE 8000
+
+# Run using Gunicorn
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000", "--workers", "1"]
